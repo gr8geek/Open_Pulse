@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html>
+
+    <body>
+<video id="my-video" width="480" height="270" crossorigin="anonymous"autoplay></video>
+
+          <canvas id="my-canvas" width="480" height="270"></canvas>
+          
+    </body>
+
+<script>
+    window.addEventListener('DOMContentLoaded',(event)=>{
+        const constraints = {
+  video: {facingMode :{exact:"environment"}}
+};
+
+navigator.mediaDevices.getUserMedia({
+  video: {
+    facingMode: 'environment',
+  }
+})
+.then((stream) => {
+  const video = document.querySelector('video');
+  video.srcObject = stream;
+  
+  // get the active track of the stream
+  const track = stream.getVideoTracks()[0];
+
+  video.addEventListener('loadedmetadata', (e) => {  
+    window.setTimeout(() => (
+      onCapabilitiesReady(track.getCapabilities())
+    ), 500);
+  });
+
+  function onCapabilitiesReady(capabilities) {
+    if (capabilities.torch) {
+      track.applyConstraints({
+        advanced: [{torch: false}]
+      })
+      .catch(e => console.log(e));
+    }
+  }
+  
+})
+.catch(err => console.error('getUserMedia() failed: ', err));
+console.log("Loaded")
+var processor = {  
+timerCallback: function() {  
+if (this.video.paused || this.video.ended) {  
+return;  
+}  
+this.computeFrame();  
+var self = this;  
+setTimeout(function () {  
+self.timerCallback();  
+}, 16); // roughly 60 frames per second  
+},
+
+doLoad: function() {
+this.video = document.getElementById("my-video");
+this.c1 = document.getElementById("my-canvas");
+this.ctx1 = this.c1.getContext("2d");
+var self = this;  
+
+this.video.addEventListener("play", function() {
+self.width = self.video.width;  
+self.height = self.video.height;  
+self.timerCallback();
+}, false);
+},  
+
+computeFrame: function() {
+this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
+var frame = this.ctx1.getImageData(0, 0, this.width, this.height);
+var l = frame.data.length / 4;  
+
+for (var i = 0; i < l; i++) {
+var grey = (frame.data[i * 4 + 0] + frame.data[i * 4 + 1] + frame.data[i * 4 + 2]) / 3;
+//var grey = (frame.data[i * 4 + 0] ) / 3;
+
+frame.data[i * 4 + 0] = grey;
+frame.data[i * 4 + 1] = grey;
+frame.data[i * 4 + 2] = grey;
+}
+this.ctx1.putImageData(frame, 0, 0);
+
+return;
+}
+};  
+processor.doLoad()
+
+
+    })
+</script>
+
+</html>
