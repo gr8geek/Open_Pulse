@@ -1,4 +1,5 @@
 window.addEventListener('DOMContentLoaded',(event)=>{
+  var array = []
     const constraints = {
 video: {facingMode :{exact:"environment"}}
 };
@@ -24,7 +25,7 @@ window.setTimeout(() => (
 function onCapabilitiesReady(capabilities) {
 if (capabilities.torch) {
   track.applyConstraints({
-    advanced: [{torch: false}]
+    advanced: [{torch: true}]
   })
   .catch(e => console.log(e));
 }
@@ -62,15 +63,17 @@ computeFrame: function() {
 this.ctx1.drawImage(this.video, 0, 0, this.width, this.height);
 var frame = this.ctx1.getImageData(0, 0, this.width, this.height);
 var l = frame.data.length / 4;  
-
+var sum = 0
 for (var i = 0; i < l; i++) {
 var grey = (frame.data[i * 4 + 0] + frame.data[i * 4 + 1] + frame.data[i * 4 + 2]) / 3;
 //var grey = (frame.data[i * 4 + 0] ) / 3;
-
+sum+=grey
 frame.data[i * 4 + 0] = grey;
 frame.data[i * 4 + 1] = grey;
 frame.data[i * 4 + 2] = grey;
 }
+//array.push(sum/l)
+console.log(sum/l)
 this.ctx1.putImageData(frame, 0, 0);
 
 return;
